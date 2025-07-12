@@ -65,37 +65,35 @@ func (rx *receivable) loop() {
 		case <-rx.ctx.Done():
 			return
 		default:
-		}
-
-		// read pdu from conn
-		var p pdu.PDU
-		if err = rx.conn.SetReadTimeout(rx.settings.ReadTimeout); err == nil {
-			p, err = pdu.Parse(rx.conn)
-		}
-		if err != nil {
-			if atomic.LoadInt32(&rx.aliveState) == Alive {
-				if rx.settings.OnReceivingError != nil {
-					rx.settings.OnReceivingError(err)
+			// read pdu from conn
+			var p pdu.PDU
+			if err = rx.conn.SetReadTimeout(rx.settings.ReadTimeout); err == nil {
+				p, err = pdu.Parse(rx.conn)
+			}
+			if err != nil {
+				if atomic.LoadInt32(&rx.aliveState) == Alive {
+					if rx.settings.OnReceivingError != nil {
+						rx.settings.OnReceivingError(err)
+					}
+					rx.closing(InvalidStreaming)
 				}
-				rx.closing(InvalidStreaming)
+				return
 			}
-			return
-		}
 
-		var closeOnUnbind bool
-		if p != nil {
-			if rx.settings.WindowedRequestTracking != nil && rx.settings.OnExpectedPduResponse != nil {
-				closeOnUnbind = rx.handleWindowPdu(p)
-			} else if rx.settings.OnAllPDU != nil {
-				closeOnUnbind = rx.handleAllPdu(p)
-			} else {
-				closeOnUnbind = rx.handleOrClose(p)
-			}
-			if closeOnUnbind {
-				rx.closing(UnbindClosing)
+			var closeOnUnbind bool
+			if p != nil {
+				if rx.settings.WindowedRequestTracking != nil && rx.settings.OnExpectedPduResponse != nil {
+					closeOnUnbind = rx.handleWindowPdu(p)
+				} else if rx.settings.OnAllPDU != nil {
+					closeOnUnbind = rx.handleAllPdu(p)
+				} else {
+					closeOnUnbind = rx.handleOrClose(p)
+				}
+				if closeOnUnbind {
+					rx.closing(UnbindClosing)
+				}
 			}
 		}
-
 	}
 }
 
