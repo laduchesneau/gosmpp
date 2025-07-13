@@ -1,3 +1,13 @@
+*********************************************************************************************************************
+DO NOT USE THIS BRANCH
+
+I am keeping it for archival purposes only. 
+It introduced multiple bugs and did not fix the initial bug it was intended to fix
+
+Lesson learned: I need more test
+
+USE AT YOUR OWN RISK
+********************************************************************************************************************
 # gosmpp
 
 [![](https://github.com/linxGnu/gosmpp/workflows/Build/badge.svg)]()
